@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace ControleFinanceiroAPI.Controllers;
 
@@ -13,10 +17,12 @@ namespace ControleFinanceiroAPI.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IConfiguration _configuration;
 
-    public UsersController(AppDbContext context)
+    public UsersController(AppDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     [HttpPost("register")]
@@ -43,18 +49,46 @@ public class UsersController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login (LoginUserDto dto)
     {
+
+        //Busca o usuario pelo email
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
         if (user == null)
             return Unauthorized("Email ou senha invalidos");
 
+        //Verifica senha pelo PasswordHasher
         var hasher = new PasswordHasher<User>();
         var result = hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 
         if (result == PasswordVerificationResult.Failed)
             return Unauthorized("Email ou senha invalidos");
 
-        return Ok(new {user.Id, user.Email});
+        //Cria as claim(dados dos usuarios no token
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email)
+        };
+
+        var jwtsettings = _configuration.GetSection("Jwt");
+        var key = Encoding.ASCII.GetBytes(jwtsettings["Key"]!);
+
+        //cria as credenciais de assinatura
+        var credentials = new SigningCredentials(
+            new SymmetricSecurityKey(key),
+            SecurityAlgorithms.HmacSha256);
+
+        //cria o token
+        var token = new JwtSecurityToken(
+            issuer: jwtsettings["Issuer"],
+            audience: jwtsettings["Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(
+                double.Parse(jwtsettings["ExpiresInMinutes"]!)),
+                signingCredentials: credentials);
+
+
+        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
     }
 
 }
