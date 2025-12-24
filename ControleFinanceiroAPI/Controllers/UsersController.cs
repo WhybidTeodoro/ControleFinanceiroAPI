@@ -1,0 +1,48 @@
+﻿using ControleFinanceiroAPI.Data;
+using ControleFinanceiroAPI.DTOs;
+using ControleFinanceiroAPI.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace ControleFinanceiroAPI.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class UsersController : ControllerBase
+{
+    private readonly AppDbContext _context;
+
+    public UsersController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Register(RegisterUserDto dto)
+    {
+        bool emailExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+        if (emailExists)
+            return BadRequest("Email já existe");
+
+        var user = new User
+        {
+            Email = dto.Email,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var hasher = new PasswordHasher<User>();
+        user.PasswordHash = hasher.HashPassword(user, dto.Password);
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        return Created("", new {user.Id, user.Email});
+
+        
+
+
+        
+    }
+}
