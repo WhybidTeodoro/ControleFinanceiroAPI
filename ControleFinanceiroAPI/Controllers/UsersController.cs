@@ -19,7 +19,7 @@ public class UsersController : ControllerBase
         _context = context;
     }
 
-    [HttpPost]
+    [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterUserDto dto)
     {
         bool emailExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
@@ -38,11 +38,23 @@ public class UsersController : ControllerBase
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        return Created("", new {user.Id, user.Email});
-
-        
-
-
-        
+        return Created("", new {user.Id, user.Email}); 
     }
+    [HttpPost("login")]
+    public async Task<IActionResult> Login (LoginUserDto dto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+        if (user == null)
+            return Unauthorized("Email ou senha invalidos");
+
+        var hasher = new PasswordHasher<User>();
+        var result = hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
+
+        if (result == PasswordVerificationResult.Failed)
+            return Unauthorized("Email ou senha invalidos");
+
+        return Ok(new {user.Id, user.Email});
+    }
+
 }
