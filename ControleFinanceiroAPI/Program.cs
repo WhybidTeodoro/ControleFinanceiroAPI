@@ -1,9 +1,18 @@
 using ControleFinanceiroAPI.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+
+
+// ========================
+//  Configuração DbContext
+// ========================
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -13,6 +22,47 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         connectionString,
         ServerVersion.AutoDetect(connectionString));
 });
+
+// ====================
+//  Configuração JWT
+// ====================
+
+//Le a seção Jwt de appsettings.json
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+
+//obtém a chave secreta e converte para bytes
+var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+
+//Registra o serviço de autenticação
+builder.Services.AddAuthentication(options =>
+{
+    //define que o padrão de autenticação sera JWT
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        //valida se o token foi assinado com a chave correta
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+
+        //valida quem emitiu o token
+        ValidateIssuer = true,
+        ValidIssuer = jwtSettings["Issuer"],
+
+        //Valida para quem o token é destinado
+        ValidateAudience = true,
+        ValidAudience = jwtSettings["Audience"],
+
+        //valida se o token expirou
+        ValidateLifetime = true,
+
+        //Remove tolerancia de tempo extra
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
 
 
 builder.Services.AddControllers();
@@ -30,7 +80,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
