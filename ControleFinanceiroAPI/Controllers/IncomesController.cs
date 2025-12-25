@@ -63,7 +63,7 @@ public class IncomesController : ControllerBase
         {
             Id = income.Id,
             Amount = income.Amount,
-            Data = income.Data,
+            Data = income.Data.ToString("dd/mm/yyyy"),
             Description = income.Description
         };
 
@@ -89,7 +89,7 @@ public class IncomesController : ControllerBase
             {
                 Id = income.Id,
                 Amount = income.Amount,
-                Data = income.Data,
+                Data = income.Data.ToString("dd/mm/yyyy"),
                 Description = income.Description
             }).ToListAsync();
 

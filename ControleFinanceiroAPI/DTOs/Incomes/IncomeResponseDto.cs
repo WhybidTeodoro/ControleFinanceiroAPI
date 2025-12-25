@@ -17,8 +17,9 @@ public class IncomeResponseDto
 
     /// <summary>
     /// Representa a data em que foi adicionada a renda do usuario no dto response
+    /// no formato dd/mm/yyyy
     /// </summary>
-    public DateTime Data { get; set; }
+    public string Data { get; set; } = string.Empty;
 
     /// <summary>
     /// Representa a descrição da renda do usuario no dto response
