@@ -39,11 +39,6 @@ public class IncomesController : ControllerBase
         if(userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             return Unauthorized("Token invalido ou sem identificação do usuario");    
         
-        //Verificação de seguração para o usuario valido
-        bool userExists = await _context.Users.AnyAsync(u => u.Id == userId);
-        if (!userExists)
-            return Unauthorized("Usuario não encontrado");
-
         //Adicionando os dados via Dto
         var income = new Income()
         {
@@ -82,11 +77,6 @@ public class IncomesController : ControllerBase
 
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             return Unauthorized("Token invalido ou sem identificação do usuario");
-
-        bool userExists = await _context.Incomes.AnyAsync(u => u.UserId == userId);
-        if (!userExists) 
-            return Unauthorized("Usuario não encontrado");
-
         //Validação basica dos filtros [FromQuerry] recebidos
 
         if (month.HasValue && (month < 1 || month > 12))
@@ -119,10 +109,62 @@ public class IncomesController : ControllerBase
             {
                 Id = income.Id,
                 Amount = income.Amount,
-                Data = income.Data.ToString("dd/mm/yyyy"),
+                Data = income.Data.ToString("dd/MM/yyyy"),
                 Description = income.Description
             }).ToListAsync();
 
         return Ok(incomes);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateIncome(int id, UpdateIncomeDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            return Unauthorized("Token invalido ou sem identificação do usuario");
+
+        var income = await _context.Incomes.FirstOrDefaultAsync(i => i.UserId == userId && i.Id == id);
+
+        if(income == null)
+            return NotFound("Renda não encontrada");
+
+        income.Amount = dto.Amount;
+        income.Data = dto.Data;
+        income.Description = dto.Description;
+
+        await _context.SaveChangesAsync();
+
+        var response = new IncomeResponseDto
+        {
+            Id = id,
+            Amount = income.Amount,
+            Data = income.Data.ToString("dd/MM/yyyy"),
+            Description = income.Description
+        };
+
+        return Ok(response);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteIncome(int id)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            return Unauthorized("Token invalido ou sem identificação do usuario");
+
+        var income = await _context.Incomes.FirstOrDefaultAsync(i => i.UserId == userId && i.Id == id);
+
+        if (income == null)
+            return NotFound("Renda não encontrada");
+
+        _context.Incomes.Remove(income);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
     }
 }
