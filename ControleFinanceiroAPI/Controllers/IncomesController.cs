@@ -72,8 +72,12 @@ public class IncomesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int? month, 
+        [FromQuery] int? year)
     {
+     
+        //Validações de usuario com JWT
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
@@ -83,8 +87,34 @@ public class IncomesController : ControllerBase
         if (!userExists) 
             return Unauthorized("Usuario não encontrado");
 
-        var incomes = await _context.Incomes
-            .Where(i => i.UserId == userId)
+        //Validação basica dos filtros [FromQuerry] recebidos
+
+        if (month.HasValue && (month < 1 || month > 12))
+            return BadRequest("O Mês deve ser entre 1 e 12");
+
+        if (year.HasValue && (year < 2000))
+            return BadRequest("Ano Inválido");
+
+        //Cria a querry base: apenas rendas de usuarios logados
+        IQueryable<Income> querry = _context.Incomes
+            .Where(i => i.UserId == userId);
+
+        //Aplica filtro por ano, se informado
+        if (year.HasValue)
+        {
+            querry = querry.Where(i => i.Data.Year == year.Value);
+        }
+
+        //Aplica filtro por mes, se informado
+        if(month.HasValue)
+        {
+            querry = querry.Where(i => i.Data.Month == month.Value);
+        }
+
+
+        //executa a querry e mapeia para o dto de resposta
+        var incomes = await querry
+            .OrderByDescending(i => i.Data)
             .Select(income => new IncomeResponseDto
             {
                 Id = income.Id,
