@@ -54,6 +54,15 @@ public class IncomesController : ControllerBase
         _context.Incomes.Add(income);
         await _context.SaveChangesAsync();
 
-        return Created("", new {income.Id, income.Amount, income.Data, income.Description});
+        var response = new IncomeResponseDto
+        {
+            Id = income.Id,
+            Amount = income.Amount,
+            Data = income.Data,
+            Description = income.Description
+        };
+
+
+        return Created("", response);
     }
 }
