@@ -1,4 +1,4 @@
-﻿namespace ControleFinanceiroAPI.DTOs;
+﻿namespace ControleFinanceiroAPI.DTOs.Users;
 
 /// <summary>
 /// DTO para registro de usuario no endpoint

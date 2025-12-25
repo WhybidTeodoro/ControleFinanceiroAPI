@@ -17,15 +17,15 @@ public class Income
     /// <summary>
     /// Representa o valor da renda
     /// </summary>
-    [Required(ErrorMessage = "O Valor da renda é obrigatória")]
+    [Required(ErrorMessage = "O Valor da renda é obrigatório")]
     [Column(TypeName = "decimal(10,2)")]
-    [Range(0.01, double.MaxValue, ErrorMessage = "O valor deve ser maior que 1 centavo")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "O valor deve ser pelo menos 1 centavo")]
     public decimal Amount { get; set; }
 
     /// <summary>
     /// representa a data em que o usuario teve aquela renda
     /// </summary>
-    [Required(ErrorMessage = "O dia da renda é obrigatória")]
+    [Required(ErrorMessage = "O dia da renda é necessário")]
     public DateTime Data { get; set; }
 
     /// <summary>

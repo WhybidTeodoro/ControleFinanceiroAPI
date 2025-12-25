@@ -1,5 +1,5 @@
 ﻿using ControleFinanceiroAPI.Data;
-using ControleFinanceiroAPI.DTOs;
+using ControleFinanceiroAPI.DTOs.Users;
 using ControleFinanceiroAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

@@ -1,4 +1,4 @@
-﻿namespace ControleFinanceiroAPI.DTOs;
+﻿namespace ControleFinanceiroAPI.DTOs.Users;
 
 public class LoginUserDto
 {
