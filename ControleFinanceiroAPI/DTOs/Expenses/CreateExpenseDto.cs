@@ -20,6 +20,7 @@ public class CreateExpenseDto
     [Required(ErrorMessage = "A data da despesa é necessária")]
     public DateTime Data { get; set; }
 
+
     /// <summary>
     /// Descrição da despesa no dto de criação
     /// </summary>
