@@ -32,4 +32,9 @@ public class User
     /// Relacionamento 1:N entre usuario e receitas
     /// </summary>
     public ICollection<Income> Incomes { get; set; } = new List<Income>();
+
+    /// <summary>
+    /// Relacionamento 1:N entre usuario e despesas
+    /// </summary>
+    public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
 }
