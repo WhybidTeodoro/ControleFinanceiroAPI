@@ -119,4 +119,50 @@ public class ExpensesController : ControllerBase
 
     }
 
+    /// <summary>
+    /// Atualiza Despesa existente
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateExpense(int id, UpdateExpenseDto dto)
+    {
+
+        //Validação automatica para os Data Annotations
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        //Extrai o userId pelo Jwt
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+        //Validação do token
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            return Unauthorized("Token invalido ou sem identificação do usuario");
+
+        //Valida a despesa via id da despesa e pelo id do usuario
+        var expense = await _context.Expenses.FirstOrDefaultAsync(e => e.UserId == userId && e.Id == id);
+
+        //Retorno para caso despesa não encontrado
+        if (expense == null)
+            return NotFound("Despesa não encontrada");
+
+        //Atualização dos dados via dto
+        expense.Amount = dto.Amount;
+        expense.Data = dto.Data;
+        expense.Description = dto.Description;
+
+        //Persistindo no banco
+        await _context.SaveChangesAsync();
+
+        //Retorno dos dados atualizados
+        var response = new ExpenseResponseDto
+        {
+            Id = expense.Id,
+            Amount = expense.Amount,
+            Data = expense.Data.ToString("dd/MM/yyyy"),
+            Description = expense.Description
+        };
+
+        return Ok(response);
+    }
+
+
 }
