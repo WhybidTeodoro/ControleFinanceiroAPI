@@ -35,7 +35,7 @@ public class IncomesController : ControllerBase
         //Extrai o UserId do JWT
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-        //Verificação de seguração para o token valido
+        //Verificação de seguraça para o token valido
         if(userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             return Unauthorized("Token invalido ou sem identificação do usuario");    
         
