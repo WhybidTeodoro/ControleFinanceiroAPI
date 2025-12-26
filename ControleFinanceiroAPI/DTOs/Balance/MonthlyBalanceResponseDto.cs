@@ -18,7 +18,7 @@ public class MonthlyBalanceResponseDto
     /// <summary>
     /// Total de receita do mês
     /// </summary>
-    public decimal TotalRecipe { get; set; }
+    public decimal TotalIncomes { get; set; }
 
     /// <summary>
     /// Total de despesas do mês
