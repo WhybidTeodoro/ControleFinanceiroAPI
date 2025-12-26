@@ -22,7 +22,7 @@ public class ExpensesController : ControllerBase
     }
 
     /// <summary>
-    /// Endpoint para adicionar uma nova despesa
+    /// Endpoint para adicionar uma nova despesa ao usuario
     /// </summary>
     [HttpPost]
     public async Task<IActionResult> AddExpense(CreateExpenseDto dto)
@@ -66,7 +66,7 @@ public class ExpensesController : ControllerBase
 
 
     /// <summary>
-    /// Retorna a lista de despesas. Pode ser filtrado por mês e ano
+    /// Retorna a lista de despesas do usuario. Pode ser filtrado por mês e ano
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll(
@@ -120,7 +120,7 @@ public class ExpensesController : ControllerBase
     }
 
     /// <summary>
-    /// Atualiza Despesa existente
+    /// Atualiza Despesa existente do usuario
     /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateExpense(int id, UpdateExpenseDto dto)
@@ -140,7 +140,7 @@ public class ExpensesController : ControllerBase
         //Valida a despesa via id da despesa e pelo id do usuario
         var expense = await _context.Expenses.FirstOrDefaultAsync(e => e.UserId == userId && e.Id == id);
 
-        //Retorno para caso despesa não encontrado
+        //Retorno para caso despesa não encontrada
         if (expense == null)
             return NotFound("Despesa não encontrada");
 
@@ -162,6 +162,35 @@ public class ExpensesController : ControllerBase
         };
 
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Deleta uma despesa existente do usuario
+    /// </summary>
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteExpense(int id)
+    {
+
+        //Extrai o userId pelo Jwt
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+        //Validação do token
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            return Unauthorized("Token invalido ou sem identificação do usuario");
+
+        //Valida a despesa via id da despesa e pelo id do usuario
+        var expense = await _context.Expenses.FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
+
+        //Retorno para caso despesa não encontrada
+        if (expense == null)
+            return NotFound("Despesa não encontrada");
+
+        //Deleta a despesa e Persistindo no banco
+        _context.Expenses.Remove(expense);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+
     }
 
 

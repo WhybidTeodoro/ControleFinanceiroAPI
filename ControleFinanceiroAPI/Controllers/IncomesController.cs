@@ -66,6 +66,9 @@ public class IncomesController : ControllerBase
         return Created("", response);
     }
 
+    /// <summary>
+    /// Retorna a lista de rendas do usuario. Pode ser filtrado por mês e ano
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll(
         [FromQuery] int? month, 
@@ -116,28 +119,39 @@ public class IncomesController : ControllerBase
         return Ok(incomes);
     }
 
+    /// <summary>
+    /// Atualiza Despesa existente do usuario
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateIncome(int id, UpdateIncomeDto dto)
     {
+        //Validação automática dos Data Annotations do DTO
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        //Validações de usuario com JWT
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
+        //Verificação de seguraça para o token valido
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             return Unauthorized("Token invalido ou sem identificação do usuario");
 
+        //Valida a renda via id da despesa e pelo id do usuario
         var income = await _context.Incomes.FirstOrDefaultAsync(i => i.UserId == userId && i.Id == id);
-
-        if(income == null)
+        
+        //Retorno para caso renda não encontrada
+        if (income == null)
             return NotFound("Renda não encontrada");
-
+        
+        //Atualiza os dados via dto
         income.Amount = dto.Amount;
         income.Data = dto.Data;
         income.Description = dto.Description;
 
+        //Persistindo no banco de dados
         await _context.SaveChangesAsync();
 
+        //Retorno os dados atualizados
         var response = new IncomeResponseDto
         {
             Id = id,
@@ -149,19 +163,27 @@ public class IncomesController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>
+    /// Deleta uma despesa existente do usuario
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteIncome(int id)
     {
+        //Validações de usuario com JWT
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
+        //Verificação de seguraça para o token valido
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             return Unauthorized("Token invalido ou sem identificação do usuario");
 
+        //Valida a renda via id da despesa e pelo id do usuario
         var income = await _context.Incomes.FirstOrDefaultAsync(i => i.UserId == userId && i.Id == id);
 
+        //Retorno para caso renda não encontrada
         if (income == null)
             return NotFound("Renda não encontrada");
 
+        //Remove a renda e persiste no banco de dados
         _context.Incomes.Remove(income);
         await _context.SaveChangesAsync();
 
