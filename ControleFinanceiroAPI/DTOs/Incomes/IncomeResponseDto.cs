@@ -1,7 +1,7 @@
 ﻿namespace ControleFinanceiroAPI.DTOs.Incomes;
 
 /// <summary>
-/// Dto responsavel por retornar os dados nos endpoints de Income
+/// Dto responsavel por retornar os dados nos endpoints
 /// </summary>
 public class IncomeResponseDto
 {

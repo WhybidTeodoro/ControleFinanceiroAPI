@@ -20,7 +20,7 @@ public class Expense
     /// </summary>
     [Required(ErrorMessage = "O Valor da despesa é obrigatório")]
     [Column(TypeName = "decimal(10,2)")]
-    [Range(0.01, double.MaxValue)]
+    [Range(0.01, double.MaxValue, ErrorMessage = "O Valor tem que ser no minimo 1 centavo")]
     public decimal Amount { get; set; }
 
     /// <summary>
