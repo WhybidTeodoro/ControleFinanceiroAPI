@@ -40,6 +40,18 @@ public class Expense
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    // <summary>
+    /// Indica se a renda é recorrente
+    /// </summary>
+    public bool IsRecurring { get; set; } = false;
+
+    /// <summary>
+    /// Dia fixo do mes para recorrencia(1 - 31)
+    /// Só deve ser preenchido se IsRecurring = true
+    /// </summary>
+    [Range(1, 31, ErrorMessage = "O Dia do mes deve estar entre 1 e 31")]
+    public int? DayOfMonth { get; set; }
+
     /// <summary>
     /// Chave estrangeira com a tabela User
     /// </summary>

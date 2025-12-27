@@ -25,4 +25,16 @@ public class UpdateExpenseDto
     /// </summary>
     [MaxLength(200, ErrorMessage = "A descrição tem que ter no maximo 200 caracteres")]
     public string Description { get; set; } = string.Empty;
+
+    // <summary>
+    /// Indica se a renda é recorrente
+    /// </summary>
+    public bool IsRecurring { get; set; } = false;
+
+    /// <summary>
+    /// Dia fixo do mes para recorrencia(1 - 31)
+    /// Só deve ser preenchido se IsRecurring = true
+    /// </summary>
+    [Range(1, 31, ErrorMessage = "O Dia do mes deve estar entre 1 e 31")]
+    public int? DayOfMonth { get; set; }
 }
