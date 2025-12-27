@@ -38,6 +38,10 @@ public class ExpensesController : ControllerBase
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             return Unauthorized("Token invalido ou sem identificação do usuario");
 
+        //Validação de recorrencia
+        if (dto.IsRecurring && !dto.DayOfMonth.HasValue)
+            return BadRequest("Para Despesas recorrentes o dia do mês é obrigatorio");
+
         //Adicionando os dados via dto
         var expense = new Expense
         {
@@ -45,6 +49,8 @@ public class ExpensesController : ControllerBase
             Data = dto.Data,
             Description = dto.Description,
             UserId = userId,
+            IsRecurring = dto.IsRecurring,
+            DayOfMonth = dto.IsRecurring ? dto.DayOfMonth : null,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -61,7 +67,7 @@ public class ExpensesController : ControllerBase
             Description = expense.Description
         };
 
-        return Created("", response);
+        return Created(string.Empty, response);
     }
 
 

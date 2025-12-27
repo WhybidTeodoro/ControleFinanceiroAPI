@@ -37,7 +37,11 @@ public class IncomesController : ControllerBase
 
         //Verificação de seguraça para o token valido
         if(userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
-            return Unauthorized("Token invalido ou sem identificação do usuario");    
+            return Unauthorized("Token invalido ou sem identificação do usuario");
+
+        //Validação de recorrencia
+        if (dto.IsRecurring && !dto.DayOfMonth.HasValue)
+            return BadRequest("Para Receitas recorrentes o dia do mês é obrigatorio");
         
         //Adicionando os dados via Dto
         var income = new Income()
@@ -45,6 +49,8 @@ public class IncomesController : ControllerBase
             Amount = dto.Amount,
             Data = dto.Data,
             Description = dto.Description,
+            IsRecurring = dto.IsRecurring,
+            DayOfMonth = dto.IsRecurring ? dto.DayOfMonth : null,
             UserId = userId,
             CreatedAt = DateTime.UtcNow
         };
@@ -63,7 +69,7 @@ public class IncomesController : ControllerBase
         };
 
 
-        return Created("", response);
+        return Created(string.Empty, response);
     }
 
     /// <summary>
